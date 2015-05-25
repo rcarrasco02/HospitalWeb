@@ -78,12 +78,13 @@
 		 <div id="selEspecialidad">
 	          <h2 class="sub-header">Seleccionar Especialidad</h2>
 	          <select id="selectEspecialidad" class="form-control">
+	          	<option value="-1">-Seleccione una especialidad-</option>
 	          </select>
 		 </div>
-		 <div id="selMedico" class="ahidden">
+		 <div id="selMedico">
 		 	<h2 class="sub-header">Seleccionar Medico</h2>
 	          <select id="selectMedico" class="form-control">
-	          	<option value="asdf">asdf</option>
+	          	<option value="-1">-Seleccione un médico-</option>
 	          </select>
 		 </div>
 		 
@@ -100,21 +101,35 @@
     
     <script lang="JavaScript">
     	$(document).ready(function(){
-    		//
+    		$("#selMedico").hide();
     		$.get("ObtenerEspecialidades", function(data){
     			var Especialidades = eval("(" + data + ")");
     			console.log(Especialidades);
     			for(i=0; i< Especialidades.length; i++){
-    				$("#selecEspecialidad").append( '<option value="' + Especialidades[i].id +'">' + Especialidades[i].nombre + '</option>'  );
+    				$("#selectEspecialidad").append( '<option value="' + Especialidades[i].id +'">' + Especialidades[i].nombre + '</option>'  );
     			}
     			
-    			$("#selectEspecialidad option").click(function(){
-    				var id = parseInt($(this).val());
-    				$.get("ObtenerMedicosDeUnEspecialidad", { idEspecialidad : id }, function(data){
-    					var Medicos = eval("(" + data + ")");
-    					console.log(Medicos);
-    				});
+    			$("#selectEspecialidad").change(function(){
+    				var optsMedicos = $("#selectMedico > option");
+    				//Borrar medicos si ya habin sido cargados para otra especialidad
+    				for(i=1; i<optsMedicos.length; i++){
+    					$(optsMedicos[i]).remove();
+    				}
+    				//Obtener el id de la especialidad
+    				var option = $("option:selected", this);
+    				var id = parseInt($(option).val());
+    				if ( id != -1 ){
+    					//Obtener medicos de la especialidad
+	    				$.get("ObtenerMedicosDeUnEspecialidad", { idEspecialidad : id }, function(data){
+	    					$("#selMedico").show();
+	    					var Medicos = eval("(" + data + ")");
+	    					for(i=0; i< Medicos.length; i++){
+	    						$("#selectMedico").append( '<option value="' + Medicos[i].id +'">' + Medicos[i].persona.nombres + " " + Medicos[i].persona.apellidos + '</option>'  );
+	    					}
+	    				});
+    				}
     			});
+    			
     		});
     	});
   
